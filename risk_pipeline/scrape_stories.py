@@ -1,73 +1,145 @@
+"""
+News story scraping module.
+
+This module retrieves and extracts article text from news story 
+URLs that have been identified as representing a potential risk.
+"""
+
 import requests
 from bs4 import BeautifulSoup
 import re
 
 
 # ----------------------------------------------------------------------
+# REGEX PATTERNS
+# ----------------------------------------------------------------------
+
+WHITESPACE_RE = re.compile(r'[\s\xa0]+')
+ZERO_WIDTH_RE = re.compile(r'[\u200b\u200c\u200d\ufeff]')
+
+
+
+# ----------------------------------------------------------------------
+# HELPER FUNCTIONS
+# ----------------------------------------------------------------------
+
+def extract_story_text(elements, story_url):
+    """
+    Extract text from BeautifulSoup Tag objects representing a news story.
+
+    Args:
+        elements (list[bs4.element.Tag]):
+            List of BeautifulSoup Tag objects from which text should be extracted.
+        story_url (str):
+            URL of the news story.
+
+    Returns:
+        str | None:
+            Text from a news story joined as a single string. 
+    """
+    seen = set()
+    paragraphs = []
+
+    for el in elements:
+        text = el.get_text(separator=' ', strip=True)
+        text = ZERO_WIDTH_RE.sub('', text)
+        text = WHITESPACE_RE.sub(' ', text)
+
+        if not text or text in seen:
+            continue
+
+        seen.add(text)
+        paragraphs.append(text)
+
+    if paragraphs:
+        print(f'Unique paragraphs scraped: {len(paragraphs)}')
+        return ' '.join(paragraphs) 
+    
+    print('Warning: no usable text found:\n')
+    print(f'    url={story_url}')
+    return None
+
+
+
+# ----------------------------------------------------------------------
 # SCRAPING FUNCTIONS
 # ----------------------------------------------------------------------
 
-def return_story_elements(story_url, story_tag, story_class, request_timeout):
+def scrape_story_elements(story_url, story_tag, story_class, config):
     """
-    Fetches all elements of a specified tag from a given news story url.
+    Fetch all matching HTML elements from a news story page.
+
+    Args:
+        story_url (str):
+            URL of the news story.
+        story_tag (str):
+            HTML tag to search for.
+        story_class (str | None):
+            CSS class to filter by. If None, returns all matching tags.
+        config:
+            Configuration module containing 'REQUEST_TIMEOUT'.
+
+    Returns:
+        list:
+            BeautifulSoup elements or an empty list if the request 
+            fails or no matching elements are found.
     """
     try:
-        response = requests.get(story_url, timeout=request_timeout)
+        response = requests.get(story_url, timeout=config.REQUEST_TIMEOUT)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
-        print(f"Error: request failed for {story_url}: {e}")
+        print('Error: unable to scrape story:\n')
+        print(f'    url={story_url}')
+        print(f'    {type(e).__name__}: {e}')
         return []
 
     soup = BeautifulSoup(response.content, "html.parser")
 
-    elements = soup.find_all(story_tag, class_=story_class) if story_class else soup.find_all(story_tag)
+    if story_class:
+        elements = soup.find_all(story_tag, class_=story_class)
+    else:
+        elements = soup.find_all(story_tag)
 
     if not elements:
-        print(f"Error: no elements found for {story_url}")
+        print(f'Warning: no elements found for {story_url}')
 
     return elements 
 
 
-def normalize_story_text(response):
+def scrape_stories(risk_headlines_df, config):
     """
-    Returns normalized text from a response as single a string joined by spaces.
-    """
-    paragraphs = []
+    Scrape text for successfully extracted news stories in the dataframe.
 
-    for element in response:
-        text = element.get_text(separator=' ', strip=True)
-        text = text.replace('\xa0', ' ')
-        text = re.sub(r'\s+', ' ', text).strip()
+    Args:
+        risk_headlines_df (pd.DataFrame):
+            DataFrame containing story URLs and scraping selectors.
+        config:
+            Configuration module containing 'REQUEST_TIMEOUT'.
 
-        if text:
-            paragraphs.append(text)
-
-    print(f'Paragraphs scraped: {len(paragraphs)}')
-
-    return ' '.join(paragraphs) 
-
-
-def return_story_text(story_url, story_tag, story_class, request_timeout):
-    """
-    Fetches elements and normalizes text from a single new story. 
-    """
-    response = return_story_elements(story_url, story_tag, story_class, request_timeout)
-
-    return normalize_story_text(response)
-
-
-def scrape_stories(risk_headlines_df, request_timeout):
-    """
-    Scrapes and returns normalized text for all news stories in the dataframe.
+    Returns:
+        list[str]:
+            List of story texts for stories successfully scraped.
     """
     story_texts = []
+    total_words = 0
 
     for row in risk_headlines_df.itertuples():
-        story_text = return_story_text(row.Link, row.story_tag, row.story_class, request_timeout)
+        story_url = row.link
+        story_tag = row.story_tag
+        story_class = row.story_class
 
-        if story_text:
-            story_texts.append(story_text)
+        elements = scrape_story_elements(story_url, story_tag, story_class, config)
 
-    total_words = sum(len(text.split()) for text in story_texts)
-    print(f"\nTotal words: {total_words}\n")
+        if not elements:
+            continue
+
+        story_text = extract_story_text(elements, story_url)
+        if not story_text:
+            continue
+
+        story_texts.append(story_text)
+        total_words += len(story_text.split())
+
+    print(f'\nTotal words: {total_words}\n')
+
     return story_texts
