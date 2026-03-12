@@ -2,7 +2,7 @@
 
 A Python pipeline that uses web scraping and LLMs to monitor news events based on a certain risk type. The system is designed to allow analysts to detect emerging risks such as supply chain disruptions, regulatory changes or geopolitical events more efficiently. It is particularly useful in emerging markets with many non-English sources because LLMs are excellent at simultaneously translating and summarizing raw news content. 
 
-**Key technologies:** Python, BeautifulSoup, Pandas, LLM APIs, prompt engineering.
+**Key technologies:** Python, BeautifulSoup, Pandas, LLM APIs (Gemini), prompt engineering.
 
 
 ## 🔍 Overview
@@ -77,7 +77,7 @@ the end user
 
 - **Batch headline identification:** The scraped headlines are evaluated in batches using a lightweight LLM to improve efficiency. Headlines are joined together and separated by index numbers. The LLM is then asked to return only the indices of potential risk stories as a Python-style list.
 
-- **Two-stage LLM summarisation:** The scraped story text undergoes multiple rounds of summarisation to improve relevance. The story text is batched and summarised using a lightweight LLM. An advanced LLM is then asked to use judgement to produce a concise summary of these summaries. 
+- **Two-stage LLM summarisation:** The scraped story text undergoes multiple rounds of summarisation to improve relevance. The story text is batched and summarised using a lightweight LLM. An advanced LLM is then asked to use judgement to produce a concise summary of the summaries. 
 
 
 ## 🗂️ Project Structure
@@ -102,13 +102,19 @@ targeted-news-monitoring-pipeline
 
 ```bash
 # Clone the repository
-git clone https://github.com/jcarterlab/Targeted-News-Analysis-Pipeline.git
+git clone https://github.com/jcarterlab/Targeted-News-Monitoring-Pipeline.git
 
-cd Targeted-News-Analysis-Pipeline
+cd Targeted-News-Monitoring-Pipeline
 
 # Create virtual environment
 python -m venv .venv
+
+# Activate virtual environment
+# macOS / Linux:
 source .venv/bin/activate
+
+# Windows (PowerShell):
+.venv\Scripts\Activate.ps1
 
 # Install dependencies
 pip install -r requirements.txt
