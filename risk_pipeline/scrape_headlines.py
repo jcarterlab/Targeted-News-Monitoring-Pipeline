@@ -1,5 +1,5 @@
 """
-Headline scraping module for the Risk Pipeline.
+Headline scraping module.
 
 This module retrieves news listing pages, extracts headline text
 and article links, and returns the results as a Pandas DataFrame.
@@ -25,7 +25,7 @@ def extract_text(element):
             BeautifulSoup Tag object from which text should be extracted.
 
     Returns:
-        str:
+        str | None:
             Stripped element text, or None if element is None or has no text. 
     """
     if element is None:
@@ -53,7 +53,7 @@ def extract_link(element, base_url):
             Initial part of the URL needed to create a full URL from relative links.
 
     Returns:
-        str:
+        str | None:
             Absolute URL, or None if not possible to construct.
     """
     if element is None:
@@ -90,7 +90,7 @@ def scrape_headline_elements(page_url, tag, config):
             Configuration module containing REQUEST_TIMEOUT.
 
     Returns:
-        list[bs4.element.Tag]:
+        list[bs4.element.Tag] | None:
             List of BeautifulSoup elements matching the tag.
     """
     headers = {
@@ -187,6 +187,11 @@ def build_headlines_dataframe(
     return pd.DataFrame(headlines, columns=columns)
 
 
+
+# ----------------------------------------------------------------------
+# ORCHESTRATION FUNCTIONS 
+# ----------------------------------------------------------------------
+
 def scrape_headlines(links_csv_path, config):
     """
     Scrape headline text and links for each news source defined in a links CSV.
@@ -214,9 +219,7 @@ def scrape_headlines(links_csv_path, config):
     if missing_cols:
         raise RuntimeError(f'{links_csv_path} missing required columns: {sorted(missing_cols)}')
 
-    print(
-        f'\nLinks to be scraped: {len(links_df)}\n'
-    )
+    print(f'\nLinks to be scraped: {len(links_df)}\n')
 
     headlines_dfs = []
 

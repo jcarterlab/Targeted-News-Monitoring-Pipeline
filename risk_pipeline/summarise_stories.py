@@ -1,12 +1,12 @@
 """
-News story summarisation module
+News story summarisation module. 
 
 This module converts scraped news story text into a final 
 summary using a two-stage LLM summarisation process.
 """
 
 import time
-from risk_pipeline.prompts import story_text_summarization_prompt, executive_summary_prompt
+from risk_pipeline.build_prompts import story_text_summarization_prompt, executive_summary_prompt
 
 
 # ----------------------------------------------------------------------
@@ -20,7 +20,7 @@ def batch_story_texts(story_texts, config):
     Args:
         story_texts (list[str]):
             List of story texts for successfully scraped stories.
-        config:
+        config (module):
             Configuration module containing 'LLM_STORY_WORDS_BATCH_SIZE'.
 
     Returns:
@@ -80,14 +80,7 @@ def batch_story_texts(story_texts, config):
 # SUMMARISATION FUNCTIONS 
 # ----------------------------------------------------------------------
 
-def summarise_story_text_batches(
-        client,
-        story_text_batches, 
-        today_date, 
-        entity_description, 
-        risk_type,
-        config
-    ):
+def summarise_story_text_batches(client, story_text_batches, today_date, config):
     """
     Generate summaries for batches of scraped story text using a basic LLM model.
 
@@ -98,12 +91,9 @@ def summarise_story_text_batches(
             List of story text batches created from scraped articles.
         today_date (str):
             Date string used to contextualize the summary generation.
-        entity_description (str):
-            Description of the entity potentially affected by the risk (e.g. 'a logistics firm').
-        risk_type (str):
-            Type of risk to evaluate (e.g. 'transport disruption events').
         config (module):
-            Configuration module containing 'LLM_RETRY_ATTEMPTS', 'LLM_WAIT_TIME' and 'BASIC_MODEL'. 
+            Configuration module containing 'LLM_RETRY_ATTEMPTS', 'LLM_WAIT_TIME', 'BASIC_MODEL', 
+            'ENTITY_OF_CONCERN' and 'RISK_TYPE'.
 
     Returns:
         list[str] | None:
@@ -121,9 +111,8 @@ def summarise_story_text_batches(
 
         prompt = story_text_summarization_prompt(
             today_date, 
-            entity_description, 
-            risk_type, 
-            story_text
+            story_text,
+            config
         )
 
         for attempt in range(1, retry_attempts + 1):
@@ -164,14 +153,7 @@ def summarise_story_text_batches(
     return summaries
 
 
-def get_executive_summary(
-        client,
-        story_text_summaries,
-        today_date,
-        entity_description, 
-        risk_type,
-        config
-):
+def get_executive_summary(client, story_text_summaries, today_date, config):
     """
     Generate an executive summary from story-text batch summaries using an advanced LLM model.
 
@@ -182,12 +164,9 @@ def get_executive_summary(
             List of LLM-generated summaries for successfully processed story text batches.
         today_date (str):
             Date string used to contextualize the summary generation.
-        entity_description (str):
-            Description of the entity potentially affected by the risk (e.g. 'a logistics firm').
-        risk_type (str):
-            Type of risk to evaluate (e.g. 'transport disruption events').
         config (module):
-            Configuration module containing 'LLM_RETRY_ATTEMPTS', 'LLM_WAIT_TIME' and 'ADVANCED_MODEL'. 
+            Configuration module containing 'LLM_RETRY_ATTEMPTS', 'LLM_WAIT_TIME', 'ADVANCED_MODEL', 
+            'ENTITY_OF_CONCERN' and 'RISK_TYPE'.
 
     Returns:
         str | None:
@@ -200,10 +179,9 @@ def get_executive_summary(
     combined_summaries = "\n\n".join(story_text_summaries)
 
     prompt = executive_summary_prompt(
-        today_date, 
-        entity_description, 
-        risk_type, 
-        combined_summaries
+        today_date,
+        combined_summaries,
+        config
     )
 
     for attempt in range(1, retry_attempts + 1):
@@ -242,14 +220,7 @@ def get_executive_summary(
 # ORCHESTRATION FUNCTIONS 
 # ----------------------------------------------------------------------
 
-def summarise_stories(
-        client,
-        story_texts, 
-        today_date, 
-        entity_description, 
-        risk_type,
-        config
-    ):
+def summarise_stories(client, story_texts, today_date, config):
     """
     Generate a final summary from scraped story texts.
 
@@ -260,18 +231,14 @@ def summarise_stories(
             List of story texts for stories successfully scraped.
         today_date (str):
             Date string used to contextualize summary generation.
-        entity_description (str):
-            Description of the entity potentially affected by the risk (e.g. 'a logistics firm').
-        risk_type (str):
-            Type of risk to evaluate (e.g. 'transport disruption events').
         config (module):
-            Configuration module containing 'LLM_RETRY_ATTEMPTS', 'LLM_WAIT_TIME', 'BASIC_MODEL' 
-            and 'ADVANCED_MODEL'. 
+            Configuration module containing 'LLM_RETRY_ATTEMPTS', 'LLM_WAIT_TIME', 'BASIC_MODEL', 
+            'ADVANCED_MODEL', 'ENTITY_OF_CONCERN' and 'RISK_TYPE'.
 
     Returns:
         str:
-            Final summary text if generation succeeds, otherwise a fallback
-            message indicating that summarisation failed.
+            Final summary text, or a fallback message if no relevant stories are
+            identified or summarisation fails.
     """
     if not story_texts:
         return "No relevant stories were identified."
@@ -285,8 +252,6 @@ def summarise_stories(
         client,
         story_text_batches, 
         today_date, 
-        entity_description, 
-        risk_type,
         config
     )
 
@@ -300,8 +265,6 @@ def summarise_stories(
         client,
         story_text_summaries,
         today_date,
-        entity_description, 
-        risk_type,
         config
     )
 

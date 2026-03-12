@@ -7,7 +7,7 @@ those that may represent risks to a specified entity and risk category.
 
 import time
 import re
-from risk_pipeline.prompts import headline_identification_prompt 
+from risk_pipeline.build_prompts import headline_identification_prompt 
 
 
 # ----------------------------------------------------------------------
@@ -20,10 +20,10 @@ def number_headlines(headlines_df):
 
     Args:
         headlines_df (pd.DataFrame):
-            DataFrame containing a 'Headline' column with scraped headlines.
+            DataFrame containing a 'headline' column with scraped headlines.
 
     Returns:
-        list (str):
+        list[str]:
             A list of headline strings each prefixed with an index number.
     """
     return [
@@ -37,14 +37,14 @@ def batch_headlines(numbered_headlines, config):
     Split numbered headlines into newline-separated batches for LLM processing.
 
     Args:
-        numbered_headlines (list):
-            List of numbered headline strings representing batches for LLM processing.
+        numbered_headlines (list[str]):
+            List of numbered headline strings.
         config (module):
             Configuration module containing 'LLM_HEADLINE_BATCH_SIZE'.
 
     Returns:
         list:
-            List of strings containing numbered headlines whose size is based on 'LLM_HEADLINE_BATCH_SIZE'. 
+            List of strings each containing up to LLM_HEADLINE_BATCH_SIZE numbered headlines.
     """
     batch_size = config.LLM_HEADLINE_BATCH_SIZE
     if not numbered_headlines:
@@ -72,9 +72,9 @@ def extract_index_numbers(response, max_len):
 
     Returns:
         tuple:
-            indices (list):
-                List of zero-based indices extracted from the Gemini response.
-            status (str):
+            list[int]:
+                List of zero-based indices extracted from the Gemini response or an empty list.
+            str:
                 Parsing status (e.g. 'ok', 'empty_response', 'no_list', 'parse_error').
     """
     if response is None:
@@ -111,7 +111,7 @@ def extract_index_numbers(response, max_len):
 
 
 # ----------------------------------------------------------------------
-# RISK HEADINE IDENTIFICATION 
+# RISK IDENTIFICATION FUNCTIONS
 # ----------------------------------------------------------------------
 
 def return_risk_headlines(client, prompt, i, max_len, config):
@@ -128,16 +128,15 @@ def return_risk_headlines(client, prompt, i, max_len, config):
         max_len (int):
             Maximum number of headlines (used to validate indices before they are used with '.iloc').
         config (module):
-            Configuration module containing 'LLM_RETRY_ATTEMPTS', 'LLM_WAIT_TIME', 
-            'MODEL' and 'LLM_HEADLINE_BATCH_SIZE'.
+            Configuration module containing 'LLM_RETRY_ATTEMPTS', 'LLM_WAIT_TIME' and 'BASIC_MODEL'. 
 
     Returns:
-        list:
-            List of zero-based indices representing selected risk headlines.
+        list[int]:
+            List of zero-based indices representing selected risk headlines or an empty list.
     """
     retry_attempts = config.LLM_RETRY_ATTEMPTS
     wait_time = config.LLM_WAIT_TIME
-    model = config.MODEL
+    model = config.BASIC_MODEL
 
     
     for attempt in range(1, retry_attempts + 1):
@@ -171,14 +170,12 @@ def return_risk_headlines(client, prompt, i, max_len, config):
                 return []         
 
 
-def identify_risk_headlines(
-        client, 
-        headlines_df, 
-        entity_description, 
-        risk_type,
-        risk_confidence_threshold,
-        config
-    ):
+
+# ----------------------------------------------------------------------
+# ORCHESTRATION FUNCTIONS 
+# ----------------------------------------------------------------------
+
+def identify_risk_headlines(client, headlines_df, config):
     """
     Identify potential risk-related headlines using an LLM.
 
@@ -186,24 +183,19 @@ def identify_risk_headlines(
         client (object):
             Gemini client instance. 
         headlines_df (pd.DataFrame):
-            DataFrame containing a 'Headline' column with scraped headlines.
-        entity_description (str):
-            Description of the entity type of concern (e.g. 'a logistics firm').
-        risk_type (str):
-            Description of the risk category being identified (e.g. 'transport disruption events').
-        risk_confidence_threshold (int):
-            Minimum confidence level the LLM should use when selecting headlines.
+            DataFrame containing a 'headline' column with scraped headlines.
         config (module):
             Configuration module containing 'LLM_RETRY_ATTEMPTS', 'LLM_WAIT_TIME', 
-            'MODEL' and 'LLM_HEADLINE_BATCH_SIZE'.
+            'BASIC_MODEL', 'LLM_HEADLINE_BATCH_SIZE', 'ENTITY_OF_CONCERN', 'RISK_TYPE', 
+            and 'RISK_CONFIDENCE_THRESHOLD'.
 
     Returns:
         pd.DataFrame:
             Subset of the input DataFrame containing headlines identified as potential risks.
     """
-    numbered_headlines = number_headlines(headlines_df)
-
     max_len = len(headlines_df)
+
+    numbered_headlines = number_headlines(headlines_df)
 
     headline_batches = batch_headlines(numbered_headlines, config)
 
@@ -211,10 +203,8 @@ def identify_risk_headlines(
 
     for i, batch in enumerate(headline_batches, start=1):
         prompt = headline_identification_prompt(
-            entity_description, 
-            risk_type, 
-            risk_confidence_threshold, 
-            batch
+            batch,
+            config
         )
 
         indices = return_risk_headlines(
