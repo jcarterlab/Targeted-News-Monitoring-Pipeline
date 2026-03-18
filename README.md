@@ -142,7 +142,7 @@ The pipeline will run using the example news sources provided in `links.csv` and
 
 The pipeline supports three levels of customisation:
 
-### 1. Define news sources
+### 1. News sources
 
 Edit `links.csv` to provide the news listing URLs and the CSS selectors used to extract headlines and article content. Each row represents a news source the pipeline will monitor.
 
@@ -152,16 +152,15 @@ Example:
 links.csv
    │
    ▼
-┌───────────────┬───────────────────────────────────────────┬──────────────────────────────────────┬─────┬───────────┬──────────────────┐
-│ website       │ page_url                                  │ base_url                             │ tag │ story_tag │ story_class      │
-├───────────────┼───────────────────────────────────────────┼──────────────────────────────────────┼─────┼───────────┼──────────────────┤
-│ El Tiempo     │ https://www.eltiempo.com/colombia         │ https://www.eltiempo.com/            │ a   │ div       │ paragraph        │
-│ El Espectador │ https://www.elespectador.com/politica/... │ https://www.elespectador.com/        │ a   │ p         │ font--secondary  │
-│ ...           │ ...                                       │ ...                                  │ ... │ ...       │ ...              │
-└───────────────┴───────────────────────────────────────────┴──────────────────────────────────────┴─────┴───────────┴──────────────────┘
+┌───────────────┬────────────────────────────────────┬────────────────────────────┬─────┬───────────┬──────────────────┐
+│ website       │ page_url                           │ base_url                   │ tag │ story_tag │ story_class      │
+├───────────────┼────────────────────────────────────┼────────────────────────────┼─────┼───────────┼──────────────────┤
+│ El Tiempo     │ https://www.eltiempo.com/colombia  │ https://www.eltiempo.com/  │ a   │ div       │ paragraph        │
+│ ...           │ ...                                │ ...                        │ ... │ ...       │ ...              │
+└───────────────┴────────────────────────────────────┴────────────────────────────┴─────┴───────────┴──────────────────┘
 ```
 
-### 2. Configure risk detection parameters
+### 2. Risk detection parameters
 
 Edit `.env` to define:
 
