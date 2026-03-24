@@ -97,9 +97,13 @@ def extract_index_numbers(response, max_len):
     try:
         inside = text.split('[', 1)[1].split(']', 1)[0]
 
-        indices = [int(n) - 1 for n in re.findall(r"\d+", inside)]
+        indices = [
+            int(n) - 1 for n in re.findall(r"\d+", inside)
+        ]
 
-        validated_indices = [i for i in indices if 0 <= i < max_len]
+        validated_indices = [
+            i for i in indices if 0 <= i < max_len
+        ]
 
         print(f'Extracted {len(validated_indices)} indices')
 

@@ -37,6 +37,11 @@ def extract_story_text(elements, story_url):
         str | None:
             Text from a news story joined as a single string. 
     """
+    if not elements:
+        print('Warning: no usable text found:\n')
+        print(f'    url={story_url}')
+        return None
+
     seen = set()
     paragraphs = []
 
@@ -51,13 +56,13 @@ def extract_story_text(elements, story_url):
         seen.add(text)
         paragraphs.append(text)
 
-    if paragraphs:
-        print(f'Unique paragraphs scraped: {len(paragraphs)}')
-        return ' '.join(paragraphs) 
-    
-    print('Warning: no usable text found:\n')
-    print(f'    url={story_url}')
-    return None
+    if not paragraphs:
+        print('Warning: no usable text found:\n')
+        print(f'    url={story_url}')
+        return None
+
+    print(f'Unique paragraphs scraped: {len(paragraphs)}')
+    return ' '.join(paragraphs) 
 
 
 

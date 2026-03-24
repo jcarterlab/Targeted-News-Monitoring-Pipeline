@@ -83,20 +83,20 @@ class TestExtractLink:
         element = make_headline_element('<a href="news/test">Hello world</a>')
         assert extract_link(element, base_url) == 'https://example.com/news/test'
 
-    def test_returns_none_when_element_get_raises_exception(self):
+    def test_returns_none_when_element_get_raises_exception(self, base_url):
         class BadElement:
             def get(self, _):
-                raise Exception('boom')
+                raise Exception('Boom')
 
-        assert extract_link(BadElement(), 'https://example.com') is None
+        assert extract_link(BadElement(), base_url) is None
 
 
 class TestScrapeHeadlineElements: 
-    def test_returns_none_when_element_get_raises_exception(self):
+    def test_returns_none_when_element_get_raises_exception(self, base_url):
         class BadElement:
             def get(self, _):
-                raise Exception('boom')
+                raise Exception('Boom')
 
-        assert extract_link(BadElement(), 'https://example.com') is None
+        assert extract_link(BadElement(), base_url) is None
         
         

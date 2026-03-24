@@ -14,11 +14,11 @@ The pipeline performs the following steps:
 1. Scrapes headlines from multiple news sources
 2. Deduplicates headlines against an SQLite database
 3. Uses an LLM to identify risk-relevant headlines
-4. Scrapes full article texts for the flagged stories
+4. Scrapes full article texts for flagged stories
 5. Uses a two-stage LLM summarisation process to generate a final summary
 6. Saves processed headlines to the database
 
-This allows large volumes of news to be processed efficiently by focusing only on relevant stories.
+This allows large volumes of news to be processed efficiently.
 
 
 ## 🧪 Example Flow
@@ -109,7 +109,8 @@ targeted-news-monitoring-pipeline/
 └── tests/
     ├── __init__.py
     ├── test_scrape_headlines.py
-    └── test_identify_risk_headlines.py
+    ├── test_identify_risk_headlines.py
+    └── test_scrape_stories.py
 ```
 
 
@@ -211,13 +212,13 @@ LLM_STORY_WORDS_BATCH_SIZE=12000
 ## 📐 Architectural Decisions
 
 - **Headline deduplication**  
-Headlines are checked against an SQLite database to improve efficiency. Previously processed headlines are read from a local database file (`processed_headlines.db`) and excluded from further processing. This prevents the pipeline from repeatedly analysing the same stories.
+Previously processed headlines are dropped by comparing new headlines against a database of those already seen to improve efficiency.
 
 - **Batch headline identification**  
-The scraped headlines are evaluated in batches using a lightweight LLM to improve efficiency. Headlines are numbered and joined together before an LLM is instructed to return the indices of potential risk stories. This reduces the number of LLM calls needed. 
+The scraped headlines are evaluated in batches using a lightweight LLM to reduce the number of LLM calls needed and improve efficiency.
 
 - **Two-stage LLM summarisation**  
-The scraped story text undergoes multiple rounds of summarisation to improve relevance. The text is summarised in batches using a lightweight LLM before an advanced LLM produces a final executive summary. This helps ensure important details are communicated concisely. 
+The scraped story text undergoes multiple rounds of summarisation to ensure important details are communicated concisely and improve relevance. 
 
 
 ## 📃 License
