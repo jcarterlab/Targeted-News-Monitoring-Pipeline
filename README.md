@@ -110,7 +110,8 @@ targeted-news-monitoring-pipeline/
     ├── __init__.py
     ├── test_scrape_headlines.py
     ├── test_identify_risk_headlines.py
-    └── test_scrape_stories.py
+    ├── test_scrape_stories.py
+    └── test_summarise_stories.py
 ```
 
 
@@ -209,16 +210,16 @@ LLM_STORY_WORDS_BATCH_SIZE=12000
 ```
 
 
-## 📐 Architectural Decisions
+## 📐 Architectural Advantages
 
 - **Headline deduplication**  
-Previously processed headlines are dropped by comparing new headlines against a database of those already seen to improve efficiency.
+Old headlines still present on a news listing site are dropped by comparing new headlines against a database of previously processed headlines (`processed_headlines.db`), reducing unnecessary re-processing. 
 
 - **Batch headline identification**  
-The scraped headlines are evaluated in batches using a lightweight LLM to reduce the number of LLM calls needed and improve efficiency.
+Scraped headlines are combined into numbered batches before a lightweight LLM is instructed to return only the indicies of potential risk headlines, decreasing the number of LLM calls needed for risk categorisation.
 
 - **Two-stage LLM summarisation**  
-The scraped story text undergoes multiple rounds of summarisation to ensure important details are communicated concisely and improve relevance. 
+Scraped story text is summarised by a lightweight LLM in batches before an advanced LLM is directed to produce a final executive summary from them using the expert judgement of a head analyst, minimizing irrelevant details. 
 
 
 ## 📃 License
