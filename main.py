@@ -1,8 +1,5 @@
-import os
 from datetime import datetime, timezone
-
 from google import genai
-
 import config
 from news_monitoring_pipeline.scrape_headlines import scrape_headlines
 from news_monitoring_pipeline.deduplicate_headlines import deduplicate_headlines
@@ -10,6 +7,8 @@ from news_monitoring_pipeline.identify_risk_headlines import identify_risk_headl
 from news_monitoring_pipeline.scrape_stories import scrape_stories
 from news_monitoring_pipeline.summarise_stories import summarise_stories
 from news_monitoring_pipeline.store_headlines import store_headlines
+from news_monitoring_pipeline.email_summary import email_summary
+
 
 # ----------------------------------------------------------------------
 # MAIN PIPELINE
@@ -42,10 +41,14 @@ def run_pipeline(client, today_date, config):
     story_texts = scrape_stories(risk_headlines_df, config)
     final_summary = summarise_stories(client, story_texts, today_date, config)
 
-    # Storage (if summary generation is successful)
-    if final_summary and len(final_summary.split()) >= 50:
+    if final_summary and len(final_summary.split()) >= config.MIN_SUMMARY_WORDS:
+        # Data storage (if summary generation is successful)
         store_headlines(new_headlines_df, config)
-        
+
+        # Email the summary (if EMAIL_ENABLED = True)
+        if config.EMAIL_ENABLED:
+            email_summary(final_summary, config)
+
     return final_summary
 
 
@@ -54,14 +57,18 @@ def run_pipeline(client, today_date, config):
 # ----------------------------------------------------------------------
 
 if __name__ == "__main__":
-    gemini_api_key = os.getenv('GEMINI_API_KEY')
-    if not gemini_api_key:
-        raise RuntimeError('GEMINI_API_KEY not found in environment.')
+
+    if not config.GEMINI_API_KEY:
+        raise RuntimeError('Please set your Gemini API key in the .env file.')
     
-    client = genai.Client(api_key=gemini_api_key)
+    if config.EMAIL_ENABLED and not config.RESEND_API_KEY:
+        raise RuntimeError('Please set your Resend API key in the .env file.')
+    
+    client = genai.Client(api_key=config.GEMINI_API_KEY)
+
     today_date = datetime.now(timezone.utc).strftime('%Y-%m-%d')
     
-    final_summary = run_pipeline(client, today_date, config)
+    summary = run_pipeline(client, today_date, config)
 
     print('\n--- Final Summary ---\n')
-    print(final_summary)
+    print(summary)
