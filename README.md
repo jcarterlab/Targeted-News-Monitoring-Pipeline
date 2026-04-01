@@ -19,7 +19,7 @@ The pipeline performs the following steps:
 6. Saves the processed summary and headlines to an SQLite database
 7. Optionally sends an email alert to the end user(s)
 
-## 📐 Design Decisions
+## 📐 Design Benefits
 
 - **Headline deduplication**  
 Avoids reprocessing by storing previously seen links in SQLite, reducing unnecessary scraping and LLM usage.
