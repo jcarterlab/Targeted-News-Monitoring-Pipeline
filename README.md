@@ -110,7 +110,7 @@ store_data
      │ └────┴───────────────────────────────────┴──────────────────────────────┴────────────┘
      │
      ▼
-email_summaries (optional)
+email_summary (optional)
      │
      │ Example output (English summary in HTML):
      │ '''
@@ -290,11 +290,11 @@ NewsMonitor/
 │   ├── scrape_stories.py
 │   ├── summarise_stories.py
 │   ├── store_data.py
-│   └── email_summaries.py
+│   └── email_summary.py
 │
 └── tests/
     ├── utils/
-    │   └── test_database.py
+    │   └── test_database_helpers.py
     │
     └── newsmonitor/
         ├── test_scrape_headlines.py

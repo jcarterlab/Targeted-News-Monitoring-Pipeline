@@ -176,6 +176,60 @@ class TestFilterNewHeadlines:
         assert df.loc[0, 'headline'] == 'A'
 
 
+class TestInsertSummary:
+    def test_inserts_summary(self, db_config):
+        connection, cursor = initialise_database(db_config)
+        insert_summary('summary_text', 'today_date', cursor, db_config)
+        row = cursor.execute('SELECT summary_text, date_generated, risk_type FROM summaries').fetchone()
+
+        assert row == ('summary_text', 'today_date', 'risk A')
+
+        connection.close()
+
+    def test_returns_summary_id(self, db_config):
+        connection, cursor = initialise_database(db_config)
+        summary_id = insert_summary('summary_text', 'today_date', cursor, db_config)
+        row = cursor.execute('SELECT id FROM summaries').fetchone()
+
+        assert row[0] == summary_id
+
+        connection.close()
+
+    def test_returns_incrementing_ids(self, db_config):
+        connection, cursor = initialise_database(db_config)
+        id1 = insert_summary('summary_text_1', 'yesterday_date', cursor, db_config)
+        id2 = insert_summary('summary_text_2', 'today_date', cursor, db_config)
+
+        assert id2 == id1 + 1
+
+        connection.close()
+
+    def test_uses_config_risk_type(self, db_config):
+        connection, cursor = initialise_database(db_config)
+
+        class DummyConfig:
+            RISK_TYPE = 'risk B'
+
+        insert_summary('summary_text', 'today_date', cursor, DummyConfig)
+        risk_type = cursor.execute('SELECT risk_type FROM summaries').fetchone()[0]
+
+        assert risk_type == 'risk B'
+
+        connection.close()
+
+    def test_multiple_insertions_persist(self, db_config):
+        connection, cursor = initialise_database(db_config)
+        insert_summary('summary_text_1', 'yesterday_date', cursor, db_config)
+        insert_summary('summary_text_2', 'today_date', cursor, db_config)
+
+        rows = cursor.execute('SELECT summary_text FROM summaries').fetchall()
+
+        assert len(rows) == 2
+        assert {row[0] for row in rows} == {'summary_text_1', 'summary_text_2'}
+
+        connection.close()
+
+
 class TestInsertHeadlines:
     def test_inserts_single_row(self, db_config):
         connection, cursor = initialise_database(db_config)
