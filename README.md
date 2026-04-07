@@ -1,8 +1,8 @@
 # 📰 NewsMonitor
 
-A Python pipeline that uses web scraping and LLMs for largescale news monitoring. 
+A Python pipeline that uses web scraping and LLMs for news monitoring. 
 
-The system allows analysts to detect emerging risks such as supply chain disruptions, regulatory changes and geopolitical events more efficiently. It is particularly useful in regions with many non-English sources because LLMs are excellent at simultaneously translating and summarizing raw news content. News monitoring can be customised based on the topic of concern (e.g. transport disruption events), entity of concern (e.g. a logistics firm operating in Colombia) and confidence threshold (e.g. the LLM must be 95% sure the story is relevant). 
+The system allows analysts to detect emerging risks such as supply chain disruptions, regulatory changes and geopolitical events more efficiently. It is particularly useful in regions with many non-English sources because LLMs are excellent at simultaneously translating and summarizing raw news content. News monitoring can be customised based on the topic of concern (e.g. transport disruption events), entity of concern (e.g. a logistics firm operating in Colombia) and confidence threshold (e.g. the LLM must be 95% sure a story is relevant). 
 
 **Key technologies:** Python, BeautifulSoup, SQLite, Pandas, Google Gemini API, Resend.
 
@@ -154,7 +154,7 @@ cp .env.example .env
 python main.py
 ```
 
-The pipeline will run using the example news sources provided in `links.csv` and default configuration. 
+The pipeline will run using the example news sources provided in `links.example.csv` and default configuration. 
 
 ## ⚙️ Custom Configuration
 
@@ -162,7 +162,7 @@ The pipeline supports four levels of customisation:
 
 ### 1. News sources (recommended)
 
-Edit `links.csv` to provide the news listing URLs and the CSS selectors used to extract headlines and article content. Each row represents a news source the pipeline will monitor.
+Create a `links.csv` file from the template and enter the news site URLs and relevant CSS selectors needed to extract headlines and article content. Each row represents a news source the pipeline will monitor.
 
 Example:
 
@@ -229,7 +229,7 @@ Example:
 RESEND_API_KEY=your_api_key_here
 ```
 
-#### 2) Create an `emails.csv` file from the `emails.example.csv` template and enter your email. 
+#### 2) Create an ``emails.csv`` file from the template and enter your email, name and active status. 
 
 Example:
 
@@ -242,7 +242,7 @@ Example:
 └────────────────────────┴─────────────┴──────────────┘
 ```
 
-**Note:** Without a verified domain in Resend, emails can only be sent to your own email address. To send summaries to multiple recipients, you must register and verify a custom domain.
+**Note:** Without a verified domain in Resend, emails can only be sent to your own registered email address. To send summaries to multiple recipients, you must register and verify a custom domain.
 
 #### 3) Edit `.env` to define:
 

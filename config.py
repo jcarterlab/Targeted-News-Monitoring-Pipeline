@@ -25,12 +25,19 @@ GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 
 # path to links.csv
 BASE_DIR = Path(__file__).resolve().parent
-LINKS_PATH = BASE_DIR / os.getenv('LINKS_FILE', 'links.csv')
+
+links_file = os.getenv('LINKS_FILE', 'links.csv')
+links_path = BASE_DIR / links_file
+
+if links_path.exists():
+    LINKS_PATH = links_path
+else:
+    LINKS_PATH = BASE_DIR / 'links.example.csv'
 
 # path to news_data.db
 DATA_DIR = BASE_DIR / 'data'
 DATA_DIR.mkdir(exist_ok=True)
-DB_PATH = DATA_DIR / 'news.db'
+DB_PATH = DATA_DIR / 'news_database.db'
 
 # path to emails.csv
 EMAILS_PATH = BASE_DIR / os.getenv('EMAILS_FILE', 'emails.csv')
