@@ -16,6 +16,10 @@ import re
 
 WHITESPACE_RE = re.compile(r'[\s\xa0]+')
 ZERO_WIDTH_RE = re.compile(r'[\u200b\u200c\u200d\ufeff]')
+JUNK_PHRASES_RE = re.compile(
+    r'(THIS WEEK ONLY: Save|REGISTER NOW)',
+    re.IGNORECASE
+)
 
 
 
@@ -50,7 +54,13 @@ def extract_story_text(elements, story_url):
         text = ZERO_WIDTH_RE.sub('', text)
         text = WHITESPACE_RE.sub(' ', text)
 
-        if not text or text in seen:
+        if not text:
+            continue
+
+        if text in seen:
+            continue
+
+        if len(text) < 30 or JUNK_PHRASES_RE.search(text):
             continue
 
         seen.add(text)
@@ -90,7 +100,10 @@ def scrape_story_elements(story_url, story_tag, story_class, config):
             fails or no matching elements are found.
     """
     try:
-        response = requests.get(story_url, timeout=config.REQUEST_TIMEOUT)
+        response = requests.get(
+            story_url, 
+            headers=config.REQUEST_HEADER,
+            timeout=config.REQUEST_TIMEOUT)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
         print('Error: unable to scrape story:\n')

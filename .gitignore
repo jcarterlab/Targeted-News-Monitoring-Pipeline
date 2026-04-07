@@ -218,3 +218,6 @@ emails.csv
 # CSV containing links
 links.csv
 
+# python file containing experimental code
+test.py
+

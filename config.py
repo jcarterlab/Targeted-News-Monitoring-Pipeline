@@ -9,6 +9,7 @@ available with sensible defaults provided for local execution.
 from dotenv import load_dotenv
 from pathlib import Path
 import os
+import json
 
 load_dotenv()
 
@@ -56,6 +57,7 @@ IDENTIFICATION_CONFIDENCE_THRESHOLD = int(os.getenv('IDENTIFICATION_CONFIDENCE_T
 # --------------------------------------------------
 
 # Request settings
+REQUEST_HEADER = json.loads(os.getenv('REQUEST_HEADER','{\"User-Agent\": \"Mozilla/5.0 (compatible; RiskPipelineBot/1.0)\"}')) # for scraping
 REQUEST_TIMEOUT = int(os.getenv('REQUEST_TIMEOUT', 10)) # seconds 
 
 # Headline filtering

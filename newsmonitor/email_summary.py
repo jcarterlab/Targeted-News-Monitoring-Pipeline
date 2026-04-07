@@ -5,7 +5,7 @@ import markdown
 
 def send_email(final_summary, recipient, today_date, config):
     """
-    Send a risk summary email to a single recipient.
+    Send a news summary email to a single recipient.
 
     Args:
         final_summary (str):
@@ -28,7 +28,7 @@ def send_email(final_summary, recipient, today_date, config):
     response = resend.Emails.send({
       'from': config.FROM_EMAIL,
       'to': recipient,
-      'subject': f'Risk summary {today_date}',
+      'subject': f'News summary {today_date}',
       'html': f'<p>{html_summary}</p>'
     })
 

@@ -94,14 +94,20 @@ def scrape_headline_elements(page_url, tag, config):
         list[bs4.element.Tag] | None:
             List of BeautifulSoup elements matching the tag.
     """
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (compatible; RiskPipelineBot/1.0)'
+    HEADERS = {
+        'User-Agent': (
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+            'AppleWebKit/537.36 (KHTML, like Gecko) '
+            'Chrome/122.0.0.0 Safari/537.36'
+        ),
+        'Accept-Language': 'en-GB,en;q=0.9',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Connection': 'keep-alive',
     }
-
     try:
         response = requests.get(
             page_url, 
-            headers=headers, 
+            headers=config.REQUEST_HEADER,
             timeout=config.REQUEST_TIMEOUT
         )
         response.raise_for_status()

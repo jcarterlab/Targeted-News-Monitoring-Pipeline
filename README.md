@@ -1,8 +1,8 @@
 # 📰 NewsMonitor
 
-A Python pipeline that uses web scraping and LLMs for news monitoring. 
+A Python pipeline that uses web scraping and LLMs to monitor news, with optional email alerts.
 
-The system allows analysts to detect emerging risks such as supply chain disruptions, regulatory changes and geopolitical events more efficiently. It is particularly useful in regions with many non-English sources because LLMs are excellent at simultaneously translating and summarizing raw news content. News monitoring can be customised based on the topic of concern (e.g. transport disruption events), entity of concern (e.g. a logistics firm operating in Colombia) and confidence threshold (e.g. the LLM must be 95% sure a story is relevant). 
+The system allows analysts to detect emerging risks such as supply chain disruptions, regulatory changes and geopolitical events more efficiently. It is particularly useful in regions with many non-English sources because LLMs are excellent at simultaneously translating and summarizing raw news content. News monitoring can be customised based on the topic of concern (e.g. transport disruption events), entity of concern (e.g. a logistics firm operating in Colombia) and confidence threshold (e.g. the LLM must be at least 95% sure a headline is relevant before scraping and processing the story text). 
 
 **Key technologies:** Python, BeautifulSoup, SQLite, Pandas, Google Gemini API, Resend.
 
@@ -18,17 +18,6 @@ The pipeline performs the following steps:
 5. Uses a two-stage LLM summarisation process to generate a final summary
 6. Saves the final summary and processed headlines to an SQLite database
 7. Optionally sends an email alert to the end user(s)
-
-## 📐 Design Benefits
-
-- **Headline deduplication**  
-Avoids reprocessing by storing previously seen links in SQLite, reducing unnecessary scraping and LLM usage.
-
-- **Batch headline identification**  
-Headlines are grouped and passed to the LLM as indexed lists, allowing it to return only relevant indices. This significantly reduces API calls.
-
-- **Two-stage LLM summarisation**  
-A lightweight model summarises batches of articles, followed by a stronger model producing a final executive summary. This improves quality while controlling cost.
 
 ## 🧪 Example Flow
 
@@ -195,6 +184,7 @@ IDENTIFICATION_CONFIDENCE_THRESHOLD=95
 
 Edit `.env` to define:
 
+- **Request heaer** for web scraping (e.g. {"User-Agent": "Mozilla/5.0 (compatible; RiskPipelineBot/1.0)"})
 - **Request timeout** for web scraping (e.g. 10 seconds)
 - **Minimum headline length** for filtering non-headlines (e.g. 25 characters)
 - **Headline batch size** for LLM classification (e.g. 40 headlines)
@@ -207,6 +197,7 @@ Edit `.env` to define:
 Example:
 
 ```env
+REQUEST_HEADER={"User-Agent": "Mozilla/5.0 (compatible; RiskPipelineBot/1.0)"}
 REQUEST_TIMEOUT=10
 MIN_HEADLINE_LENGTH=25
 LLM_HEADLINE_BATCH_SIZE=40
