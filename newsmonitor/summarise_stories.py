@@ -229,7 +229,7 @@ def get_executive_summary(client, story_text_summaries, today_date, config):
             Date string used to contextualize the summary generation.
         config (module):
             Configuration module containing 'LLM_RETRY_ATTEMPTS', 'LLM_WAIT_TIME', 'ADVANCED_MODEL', 
-            'ENTITY_OF_CONCERN' and 'RISK_TYPE'.
+            'ENTITY_OF_CONCERN' and 'TOPIC_OF_CONCERN'.
 
     Returns:
         str | None:

@@ -1,8 +1,8 @@
 """
-Risk headline identification module.
+Target headline identification module.
 
-This module processes scraped news headlines and uses an LLM to identify 
-those that may represent risks to a specified entity and risk category.
+This module processes scraped headlines and uses an LLM to identify those 
+that may be of interest to a certain entity based on a specific topic.
 """
 
 import logging
@@ -159,14 +159,9 @@ def extract_index_numbers(response, max_len):
         return [], False
 
 
-
-# ----------------------------------------------------------------------
-# RISK IDENTIFICATION FUNCTIONS
-# ----------------------------------------------------------------------
-
-def return_risk_headlines(client, prompt, i, max_len, config):
+def return_target_headlines(client, prompt, i, max_len, config):
     """
-    Call Gemini to identify risk-relevant headline indices for a single headline batch. 
+    Call Gemini to identify target headline indices for a single headline batch. 
 
     Args:
         client (object):
@@ -182,14 +177,14 @@ def return_risk_headlines(client, prompt, i, max_len, config):
 
     Returns:
         list[int]:
-            List of zero-based indices representing selected risk headlines or an empty list.
+            List of zero-based indices representing selected target headlines or an empty list.
     """
     retry_attempts = config.LLM_RETRY_ATTEMPTS
     wait_time = config.LLM_WAIT_TIME
     model = config.BASIC_MODEL
 
     logger.debug(
-        'Requesting risk headline identification batch=%d model=%s max_len=%d retry_attempts=%d',
+        'Requesting target headline identification batch=%d model=%s max_len=%d retry_attempts=%d',
         i,
         model,
         max_len,
@@ -213,7 +208,7 @@ def return_risk_headlines(client, prompt, i, max_len, config):
 
             if response_parsed:
                 logger.debug(
-                    'Parsed risk headline indices batch=%d attempt=%d/%d count=%d',
+                    'Parsed target headline indices batch=%d attempt=%d/%d count=%d',
                     i,
                     attempt,
                     retry_attempts,
@@ -266,9 +261,9 @@ def return_risk_headlines(client, prompt, i, max_len, config):
 # ORCHESTRATION FUNCTIONS 
 # ----------------------------------------------------------------------
 
-def identify_risk_headlines(client, new_headlines_df, config):
+def identify_target_headlines(client, new_headlines_df, config):
     """
-    Identify potential risk-related headlines using an LLM.
+    Identify target headlines using an LLM.
 
     Args:
         client (object):
@@ -277,17 +272,17 @@ def identify_risk_headlines(client, new_headlines_df, config):
             DataFrame containing a 'headline' column with scraped headlines.
         config (module):
             Configuration module containing 'LLM_RETRY_ATTEMPTS', 'LLM_WAIT_TIME', 
-            'BASIC_MODEL', 'LLM_HEADLINE_BATCH_SIZE', 'ENTITY_OF_CONCERN', 'RISK_TYPE', 
-            and 'RISK_CONFIDENCE_THRESHOLD'.
+            'BASIC_MODEL', 'LLM_HEADLINE_BATCH_SIZE', 'ENTITY_OF_CONCERN', 
+            'TOPIC_OF_CONCERN', and 'IDENTIFICATION_CONFIDENCE_THRESHOLD'.
 
     Returns:
         pd.DataFrame:
-            Subset of the input DataFrame containing headlines identified as potential risks.
+            Subset of the input DataFrame containing target headlines.
     """
     max_len = len(new_headlines_df)
 
     logger.info(
-        'Starting risk headline identification total_headlines=%d batch_size=%d model=%s',
+        'Starting target headline identification total_headlines=%d batch_size=%d model=%s',
         max_len,
         config.LLM_HEADLINE_BATCH_SIZE,
         config.BASIC_MODEL
@@ -310,7 +305,7 @@ def identify_risk_headlines(client, new_headlines_df, config):
             config
         )
 
-        indices = return_risk_headlines(
+        indices = return_target_headlines(
             client,
             prompt,
             i,
@@ -339,7 +334,7 @@ def identify_risk_headlines(client, new_headlines_df, config):
         )
 
     logger.info(
-        'Finished identifying risk headlines total_headlines=%d unique_headlines=%d',
+        'Finished identifying target headlines total_headlines=%d unique_headlines=%d',
         len(all_indices),
         len(unique_indices)
     )

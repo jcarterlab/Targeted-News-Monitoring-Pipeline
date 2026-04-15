@@ -1,7 +1,7 @@
 """
-Risk headline deduplication module.
+Headline deduplication module.
 
-This module orchestrates the deduplication of risk headlines by keeping 
+This module orchestrates the deduplication of headlines by keeping 
 only those whose links are not already stored in the database.
 """
 

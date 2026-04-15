@@ -13,10 +13,10 @@ The pipeline performs the following steps:
 
 1. Scrapes headlines from multiple news pages
 2. Deduplicates headlines against an SQLite database
-3. Uses an LLM to identify risk-relevant headlines
-4. Scrapes full article texts for the flagged stories
-5. Uses a two-stage LLM summarisation process to generate a final summary
-6. Saves the final summary and processed headlines to an SQLite database
+3. Uses an LLM to identify target headlines
+4. Scrapes full article texts for flagged stories
+5. Uses two-stage LLM summarisation to generate a single summary
+6. Saves the summary and processed headlines to an SQLite database
 7. Optionally sends an email alert to the end user(s)
 
 ## 🧪 Example Flow
@@ -46,9 +46,9 @@ deduplicate_headlines
      │ ]
      │
      ▼
-identify_risk_headlines
+identify_target_headlines
      │
-     │ Example output (risk headline indices):
+     │ Example output (target headline indices):
      │ [
      │   0, 
      │   7, 
@@ -85,7 +85,7 @@ store_data
      │
      │ summaries
      │ ┌─────┬───────────────────────────────────────┬────────────────┬──────────────────────┐
-     │ │ id  │ summary_text                          │ date_generated │ risk_type            │
+     │ │ id  │ summary_text                          │ date_generated │ topic                │
      │ ├─────┼───────────────────────────────────────┼────────────────┼──────────────────────┤
      │ │ 1   │ ## Summary of Potential Transport...  │ 2026-03-31     │ transport disruption │
      │ │ ... │ ...                                   │ ...            │ ...                  │

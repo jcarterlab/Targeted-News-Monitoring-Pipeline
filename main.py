@@ -5,7 +5,7 @@ from logging_config import setup_logging
 from google import genai
 from newsmonitor.scrape_headlines import scrape_headlines
 from newsmonitor.deduplicate_headlines import deduplicate_headlines
-from newsmonitor.identify_risk_headlines import identify_risk_headlines
+from newsmonitor.identify_target_headlines import identify_target_headlines
 from newsmonitor.scrape_stories import scrape_stories
 from newsmonitor.summarise_stories import summarise_stories
 from newsmonitor.store_data import store_data
@@ -47,11 +47,11 @@ def run_pipeline(client, today_date, config):
     headlines_df = scrape_headlines(config)
     new_headlines_df = deduplicate_headlines(headlines_df, config)
 
-    # Risk identification
-    risk_headlines_df = identify_risk_headlines(client, new_headlines_df, config)
+    # Headline identification
+    target_headlines_df = identify_target_headlines(client, new_headlines_df, config)
 
     # Story processing
-    story_texts = scrape_stories(risk_headlines_df, config)
+    story_texts = scrape_stories(target_headlines_df, config)
     final_summary = summarise_stories(client, story_texts, today_date, config)
 
     if final_summary and len(final_summary.split()) >= config.MIN_SUMMARY_WORDS:

@@ -2,7 +2,7 @@
 News story scraping module.
 
 This module retrieves and extracts article text from news story 
-URLs that have been identified as representing a potential risk.
+URLs that have been identified as target stories by an LLM.
 """
 
 import logging
@@ -165,12 +165,12 @@ def scrape_story_elements(website, story_url, story_tag, story_class, config):
 # ORCHESTRATION FUNCTIONS 
 # ----------------------------------------------------------------------
 
-def scrape_stories(risk_headlines_df, config):
+def scrape_stories(target_headlines_df, config):
     """
     Scrape text for successfully extracted news stories in the dataframe.
 
     Args:
-        risk_headlines_df (pd.DataFrame):
+        target_headlines_df (pd.DataFrame):
             DataFrame containing story URLs and scraping selectors.
         config:
             Configuration module containing 'REQUEST_TIMEOUT'.
@@ -179,7 +179,7 @@ def scrape_stories(risk_headlines_df, config):
         list[str]:
             List of raw scraped texts for successfully scraped news stories.
     """
-    total_stories = len(risk_headlines_df)
+    total_stories = len(target_headlines_df)
     story_texts = []
     total_words = 0
 
@@ -188,7 +188,7 @@ def scrape_stories(risk_headlines_df, config):
         total_stories
     )
 
-    for row in risk_headlines_df.itertuples():
+    for row in target_headlines_df.itertuples():
         website = row.website
         story_url = row.link
         story_tag = row.story_tag
